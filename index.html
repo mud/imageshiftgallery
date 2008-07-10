@@ -1,0 +1,240 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+        "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+<meta http-equiv="content-type" content="text/html;charset=utf-8" />
+<meta name="author" content="mud(tm) - Takashi Okamoto" />
+<meta name="copyright" content="2008 BuzaMoto. All rights reserved." />
+<!-- (c) 2008 BuzaMoto. All rights reserved. -->
+<title>BuzaMoto: ImageShiftGallery Ver. 1.1.1</title>
+<link rel="stylesheet" href="stylesheets/main.css" type="text/css" media="screen" />
+<script src="javascripts/prototype.js" language="JavaScript" type="text/javascript"></script>
+<script src="javascripts/BM_ImageShiftGallery.js" language="JavaScript" type="text/javascript"></script>
+<script type="text/javascript">
+  ////////////////////////////////////////////////////////////////////////////////
+  // INIT
+  var galleries = [];
+  function isg_init() {
+    galleries.push(new com.buzamoto.ImageShiftGallery.Gallery('gallery',[
+      {
+        markup:   '<div style="width: 500px; height: 300px; background-color: red;">\
+        <strong>This is HTML Content 1</strong>\
+        </div>',
+        width:    500,
+        height:   300,
+        padding:  20,
+        title:    "HTML 0",
+        caption:  "This is the first HTML content."
+      },
+      {
+        src:      "images/400x300.png",
+        width:    400,
+        height:   300,
+        padding:  20,
+        title:    "Image 1",
+        caption:  "This is the second image."
+      },
+      {
+        markup:   '<div style="width: 200px; height: 400px; background-color: red;">\
+        <strong>This is HTML Content 2</strong>\
+        </div>',
+        width:    200,
+        height:   400,
+        padding:  20,
+        title:    "HTML 2",
+        caption:  "This is the second HTML content."
+      },
+      {
+        src:      "images/400x300.png",
+        width:    400,
+        height:   300,
+        padding:  20,
+        title:    "Image 3",
+        caption:  "This is the last image."
+      }
+    ]));
+    
+    galleries.push(new com.buzamoto.ImageShiftGallery.Gallery('gallery-1',[
+      {
+        src: "images/400x300.png",
+        title: "Image 0",
+        caption: "This is the first image."
+      },
+      {
+        src: "images/300x400.png",
+        title: "Image 1",
+        caption: "This is the second image."
+      },
+      {
+        src: "images/400x300.png",
+        title: "Image 2",
+        caption: "This is the third image."
+      },
+      {
+        src: "images/300x400.png",
+        title: "Image 3",
+        caption: "This is the last image."
+      }
+    ], 'top'));
+    
+    galleries.push(new com.buzamoto.ImageShiftGallery.Gallery('gallery-2',[
+      {
+        src: "images/400x300.png"
+      },
+      {
+        src: "images/300x400.png"
+      },
+      {
+        src: "images/400x300.png"
+      },
+      {
+        src: "images/300x400.png"
+      }
+    ], 'top'));
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////
+  // EVENTS
+  Event.observe(window, 'load', isg_init, false);
+</script>
+</head>
+
+<body>
+  
+<div id="header">
+  <a href="http://buzamoto.com">BuzaMoto</a> | JavaScript Collection | ImageShiftGallery Version 1.1.1
+</div>
+
+<div id="content">
+  <p class="tagline">
+    <strong>ImageShiftGallery</strong> is a simple JavaScript-based image viewer. Perfect for displaying images on your site.
+  </p>
+  <ul>
+    <li><a href="#usage">Usage</a></li>
+    <li><a href="#examples">Examples</a></li>
+    <li><a href="#download">Download</a></li>
+  </ul>
+  <h2><a name="usage">Usage</a></h2>
+  <p>
+    1. Within the &lt;head&gt;, you need to set up the gallery when the page loads:
+    <pre>
+&lt;script type="text/javascript" src="javascripts/prototype.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="javascripts/BM_ImageShiftGallery.js"&gt;&lt;/script&gt;
+
+&lt;script type="text/javascript"&gt;
+  // Construct array of images you want to include.
+  // Each image is an object consisting of src, title and captions.
+  // src is the only required field.
+  var arrayOfImages = [
+    {src: 'images/a.jpg', title: 'Image A', caption: 'This is image A!'},
+    {src: 'images/b.jpg', title: 'Image B', caption: 'This is image B!'},
+    {src: 'images/c.jpg', title: 'Image C', caption: 'This is image C!'}
+  ];
+  
+  // New in Ver. 1.1: HTML content
+  // if you have HTML content you would like to use, you can include in the array of images
+  // the markup, width and height. DO NOT include src.
+  var arrayOfImages = [
+    {
+      markup:   '&lt;div style="width: 500px; height: 300px; background-color: red;"&gt;\
+        &lt;strong&gt;Hi I\'m HTML 0!&lt;/strong&gt;\
+      &lt;/div&gt;',
+      width:    500,
+      height:   300,
+      title:    "HTML 0",
+      caption:  "This is the first HTML content."
+    },
+    {src: 'images/b.jpg', title: 'Image B', caption: 'This is image B!'},
+    {src: 'images/c.jpg', title: 'Image C', caption: 'This is image C!'}
+  ];
+
+  // Create new gallery.
+  //      usage: com.buzamoto.ImageShiftGallery.Gallery(id, imageArray, valign);
+  //         id: The id &lt;div&gt; that frames the gallery.
+  // imageArray: array of images included in the gallery.
+  //     valign: vertical alignment of images. 'top', 'middle' or 'bottom' (default: 'top')
+
+  var gallery;
+  Event.observe(window, 'load', function() {
+    gallery = new com.buzamoto.ImageShiftGallery.Gallery('gallery', arrayOfImages, 'top');
+  });
+&lt;/script&gt;
+    </pre>
+    2. Inside &lt;body&gt;, we need include a &lt;div&gt; that frames the gallery, and some controls.
+    <pre>
+// Only next and prev buttons are required.
+// Note the naming of the element ids. They all start with id of the gallery frame:
+// i.e. idOfFrame_title, idOfFrame_next, etc...
+&lt;div id="gallery"&gt;
+  &lt;div&gt;
+    &lt;span style="float: left;"&gt;
+      &lt;strong id="gallery_title"&gt;Title&lt;/strong&gt;&lt;br /&gt;
+      &lt;span id="gallery_caption"&gt;Caption&lt;/span&gt;
+    &lt;/span&gt;
+    &lt;span style="float: right;"&gt;
+      &lt;a href="#" id="gallery_prev" class="isg_button"&gt;Prev&lt;/a&gt; | 
+      &lt;a href="#" id="gallery_next" class="isg_button"&gt;Next&lt;/a&gt;
+    &lt;/span&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+    </pre>
+  </p>
+  
+  <h2><a name="examples">Examples</a></h2>
+  <!-- This gallery sets width to 100% -->
+  <div id="gallery" class="gallery" style="width: 100%;">
+    <div class="controller-wrapper">
+      <div style="padding: 10px 0; height: 40px;">
+        <span style="float: left;">
+          <strong id="gallery_title">Title</strong><br />
+          <span id="gallery_caption">Caption</span>
+        </span>
+        <span style="float: right;">
+          <a href="#" id="gallery_prev" class="isg_button">Prev</a> | <a href="#" id="gallery_next" class="isg_button">Next</a>
+        </span>
+      </div>
+    </div>
+  </div>
+  
+  <div style="clear:both; border-top: 1px solid #ddd; margin-bottom: 20px;"></div>
+  
+  <!-- Setting fixed width -->
+  <div id="gallery-1" class="gallery" style="position: relative; float: left; width: 300px; margin-right: 20px;">
+    <div class="controller-wrapper">
+      <div style="padding: 10px 0; height: 40px;">
+        <span style="float: left;">
+          <strong id="gallery-1_title">Title</strong><br />
+          <span id="gallery-1_caption">Caption</span>
+        </span>
+        <span style="float: right;">
+          <a href="#" id="gallery-1_prev" class="isg_button">Prev</a> | <a href="#" id="gallery-1_next" class="isg_button">Next</a>
+        </span>
+      </div>
+    </div>
+  </div>
+  
+  <!-- This gallery does not have title/caption defined -->
+  <div id="gallery-2" class="gallery" style="position: relative; float: left; width: 300px; border: 2px solid #efefef;">
+    <div style="text-align: center;">
+      <a href="#" id="gallery-2_prev" class="isg_button">Prev</a> | <a href="#" id="gallery-2_next" class="isg_button">Next</a>
+    </div>
+  </div>
+  
+  <div class="clear"></div>
+  
+  <h2><a name="download">Download</a></h2>
+  <p>
+    Get the latest version from <a href="http://github.com">github</a>:<br />
+    <pre>git clone git://github.com/mud/imageshiftgallery.git</pre>
+  </p>
+</div>
+
+<div id="footer-wrapper">
+  <div id="footer">
+    © 2008 <a href="http://buzamoto.com">BuzaMoto</a>. All rights reserved.
+  </div>
+</div>
+
+</body>
+
+</html>

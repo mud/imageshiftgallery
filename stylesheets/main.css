@@ -1,0 +1,136 @@
+/*******************************************************************************
+
+FILE: style.css
+AUTHOR: Takashi Okamoto mud(tm) - http://www.mudcorp.com/
+DATE: 06/27/2008
+
+--------------------------------------------------------------------------------
+
+This file is part of ImageShiftGallery.
+
+  ImageShiftGallery is free for anyone to use, but this header MUST be
+  included, and may not be modified.
+
+*******************************************************************************/
+
+body {
+  background-color: white;
+  color: black;
+  font-family: "Lucida Grande", Arial, Helvetica, Geneva, Sans-serif;
+  margin: 0;
+  padding: 0;
+  font-size: 12px;
+}
+
+h1, h2, h3 { letter-spacing: -0.1em; }
+
+h2 {
+  border-top: 1px dashed #999;
+  padding-top: 6px;
+  font-weight: normal;
+  font-family: Arial, Helvetica, Sans-serif;
+  letter-spacing: -0.08em;
+}
+
+.gallery {
+  overflow: hidden;
+  font-size: 9px;
+}
+
+a { color: #111; }
+a:hover { text-decoration: none; }
+
+#header {
+  background-color: #efefef;
+  padding: 6px 10px;
+  font-size: 9px;
+  color: #666;
+  border-top: 2px solid #ccc;
+  border-bottom: 2px solid #ddd;
+}
+
+#header a {
+  font-weight: bold;
+  color: #111;
+  text-decoration: none;
+}
+
+#header a:hover {
+  color: #666;
+}
+
+#content {
+  margin: 20px;
+  padding-bottom: 20px;
+}
+
+p {
+  letter-spacing: -0.08em;
+}
+
+p.tagline { font-size: 14px; }
+
+pre { font-size: 11px; }
+
+#footer-wrapper {
+  bottom: 0;
+  position: fixed;
+  width: 100%;
+  min-height: 24px;
+  background-color: #222;
+  opacity: 0.95;
+}
+
+#footer {
+  font-size: 9px;
+  color: #ddd;
+  border-top: 2px solid #111;
+}
+
+#footer a { color: #ddd; }
+#footer a:hover { text-decoration: none; }
+#footer span { padding: 6px 2px 6px 10px; }
+
+#footer a.download {
+  position: relative;
+  right: 0;
+  text-decoration: none;
+  padding: 4px 6px;
+  color: #111;
+  background-color: yellow;
+  font-weight: bold;
+}
+#footer a.download:hover { background-color: pink; }
+
+div.clear { clear: both; }
+
+/* --------------------------------------- DONT CHANGE ---------------------- */
+
+.isg_container {
+  position: relative;
+  padding: 0;
+  margin: 0;
+}
+
+table.isg_table {
+  margin: 0;
+  padding: 0;
+  line-height: 0;
+}
+
+.isg_markup-wrapper {
+  line-height: normal;
+  overflow: hidden;
+}
+
+.isg_controller-wrapper {
+  float: left;
+  width: 100%;
+}
+
+a.isg_button {
+  color: #111;
+  text-decoration: none;
+}
+
+a.isg_button:hover { text-decoration: underline; }

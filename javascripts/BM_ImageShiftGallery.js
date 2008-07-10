@@ -1,0 +1,381 @@
+/*******************************************************************************
+
+ImageShiftGallery, version 1.1.1 (07/07/2008)
+(c) 2005 - 2008 Takashi Okamoto.
+
+ImageShiftGallery is a JavaScript image viewer. It is freely distributable,
+but this header must be included, and should not be modified. Donations are 
+appreciated. For details, see the BuzaMoto website: http://buzamoto.com/
+
+*******************************************************************************/
+
+/* ----------------------------------------------------------------------------
+
+1.1.1 - fixed for IE7.
+        Safari image loading fix (able to apply width/height) to images.
+        added support to add padding on the right of the image.
+1.1   - enabled HTML content
+1.0.2 - initial support for IE7
+1.0.1 - fixed image loader for firefox
+
+---------------------------------------------------------------------------- */
+
+// ---------------------- com.buzamoto Namespace
+
+var com;
+if (!com)
+  com = {};
+else if (typeof com != "object")
+  throw new Error("com already exists and is not an object");
+
+if (!com.buzamoto)
+  com.buzamoto = {};
+else if (typeof com.buzamoto != "object")
+  throw new Error("com.buzamoto already exists and is not an object");
+
+if (com.buzamoto.ImageShiftGallery)
+  throw new Error("com.buzamoto.ImageShiftGallery already exists");
+
+// ---------------------- com.buzamoto.ImageShiftGallery
+
+com.buzamoto.ImageShiftGallery = {
+  Version: '1.1.1'
+}
+
+
+// ---------------------- com.buzamoto.ImageShiftGallery.Gallery
+
+com.buzamoto.ImageShiftGallery.Gallery = Class.create({
+  
+  initialize: function(id, imageArray, align) {
+    this.wrapper = $(id);
+    this.id = id;
+    this.alignment = (align) ? align : 'top';
+    // convert imageArray to array of ISGImages
+    this.imageArray = new Array();
+    for (var i = 0, len = imageArray.length; i < len; ++i) {
+      var obj;
+      if (imageArray[i].src)
+        obj = new com.buzamoto.ImageShiftGallery.Image(this, imageArray[i]);
+      else if (imageArray[i].markup)
+        obj = new com.buzamoto.ImageShiftGallery.Markup(this, imageArray[i]);
+      this.imageArray.push(obj);
+    }
+    var imageList = com.buzamoto.ImageShiftGallery.Gallery.createImageList(this.alignment, imageArray);
+    
+    // create dom elements to inject
+    this.container = document.createElement('div');
+    Element.extend(this.container);
+    this.container.id = this.id + '-container';
+    this.container.addClassName('isg_container');
+    this.container.update(imageList);
+    this.wrapper.insert({top: this.container});
+    this.totalWidth = this.container.childElements()[0].getWidth();
+    
+    // create controller
+    this.controller = new com.buzamoto.ImageShiftGallery.Controller(this);
+    
+    // bind events to controls
+    var control;
+    var self = this;
+    ['next', 'prev'].each(function(type) {
+      if (control = $(self.id + "_" + type)) {
+        Event.observe(control, 'click', function(e) {
+          self.controller.move(type);
+          Event.stop(e);
+        });
+      }
+    });
+    
+    // launch load notification to check for image load
+    // onload doesn't seem to have complete image objects.
+    window.setTimeout(function() {
+      self.loadNotifier();
+    }, 200);
+  },
+  
+  calcWidth: function() {
+    var width = 0;
+    for (var i = 0; i < this.imageArray.length; i++) {
+      width += this.imageArray[i].getWidth();
+    }
+    return width;
+  },
+  
+  setWidth: function() {
+    this.totalWidth = this.calcWidth();
+  },
+  
+  loadNotifier: function(delay) {
+    delay = (delay) ? delay : 200;
+    if (!this.loadedImages()) {
+      var self = this;
+      window.setTimeout(function() {
+        self.loadNotifier(delay);
+      }, delay);
+    } else {
+      this.setWidth();
+    }
+  },
+  
+  loadedImages: function() {
+    for (var i = 0, len = this.imageArray.length; i < len; ++i) {
+      if (this.imageArray[i].src && this.imageArray[i].image.complete == false) {
+        return false;
+      }
+      if (this.imageArray[i].width == 0) this.imageArray[i].width = this.imageArray[i].image.width;
+      if (this.imageArray[i].height == 0) this.imageArray[i].height = this.imageArray[i].image.height;
+    }
+    return true;
+  }
+  
+});
+Object.extend(com.buzamoto.ImageShiftGallery.Gallery, {
+  //MOVE_COORDS: new Array(0, -1, -4, -7, -11, -17, -23, -30, -38, -47, -56, -66, -75, -84, -92, -99, -100),
+  MOVE_COORDS: new Array(0, -1, -4, -7, -11, -17, -23, -30, -38, -47, -56, -66, -75, -84, -92, -96, -100, -103, -105, -102, -101, -100),
+  TEMPLATE: {
+    table: new Template('<table cellpadding="0" cellspacing="0" border="0" class="isg_table"><tr valign="#{align}">#{images}</tr></table>'),
+    image: new Template('<td style="padding-right: #{padding}px;"><img src="#{src}" alt="" width="#{width}" height="#{height}" /></td>'),
+    image_size: new Template('<td style="padding-right: #{padding}px;"><img src="#{src}" alt="" width="#{width}" height="#{height}" /></td>'),
+    markup: new Template('<td style="padding-right: #{padding}px;"><div class="isg_markup-wrapper" style="width: #{width}px; height: #{height}px;">#{markup}</div></td>')
+  },
+  
+  createImageList: function(align, imageArray) {
+    var images = "";
+    imageArray.each(function(image) {
+      if (image.src && image.width && image.height)
+        images += com.buzamoto.ImageShiftGallery.Gallery.TEMPLATE.image_size.evaluate(image);
+      else if (image.src)
+        images += com.buzamoto.ImageShiftGallery.Gallery.TEMPLATE.image.evaluate(image);
+      else if (image.markup)
+        images += com.buzamoto.ImageShiftGallery.Gallery.TEMPLATE.markup.evaluate(image);
+    });
+    return com.buzamoto.ImageShiftGallery.Gallery.TEMPLATE.table.evaluate({align: align, images: images});
+  }
+});
+
+
+// ---------------------- ImageShiftImage
+
+com.buzamoto.ImageShiftGallery.Image = Class.create({
+  
+  initialize: function(gallery, imageObject) {
+    this.gallery = gallery;
+    this.properties = com.buzamoto.ImageShiftGallery.Image.DEFAULT.merge($H(imageObject));
+    this.width = this.properties.get('width');
+    this.height = this.properties.get('height');
+    this.image = new Image();
+    this.image.src = this.properties.get('src');
+  },
+  
+  getWidth: function() {
+    return this.width + this.properties.get('padding');
+  },
+  
+  getHeight: function() {
+    return this.height;
+  },
+  
+  getTitle: function() {
+    return this.properties.get('title');
+  },
+  
+  getCaption: function() {
+    return this.properties.get('caption');
+  }
+  
+});
+Object.extend(com.buzamoto.ImageShiftGallery.Image, {
+  DEFAULT: $H({
+    src:     '',
+    caption: '...',
+    title:   '...',
+    width:   0, 
+    height:  0,
+    padding: 0
+  })
+});
+
+
+// ---------------------- ImageShiftMarkup
+
+com.buzamoto.ImageShiftGallery.Markup = Class.create({
+  
+  initialize: function(gallery, obj) {
+    this.gallery = gallery;
+    this.properties = com.buzamoto.ImageShiftGallery.Markup.DEFAULT.merge($H(obj));
+    this.markup = obj.markup
+  },
+  
+  getWidth: function() {
+    return this.properties.get('width') + this.properties.get('padding');
+  },
+  
+  getHeight: function() {
+    return this.properties.get('height');;
+  },
+  
+  getTitle: function() {
+    return this.properties.get('title');
+  },
+  
+  getCaption: function() {
+    return this.properties.get('caption');
+  }
+  
+});
+Object.extend(com.buzamoto.ImageShiftGallery.Markup, {
+  DEFAULT: $H({
+    markup:     '<div style="width: 500px; height: 500px; background-color: red;"></div>',
+    caption: '...',
+    title:   '...',
+    width:   500, 
+    height:  500,
+    padding: 0
+  })
+});
+
+
+// ---------------------- ImageShiftController
+
+com.buzamoto.ImageShiftGallery.Controller = Class.create({
+  
+  /* ------------- CALLBACKS ------------- */
+  /* ------------- EDITABLE -------------- */
+  
+  onShiftStart: function() {
+    this.setTitle("...");
+    this.setCaption("&nbsp;");
+  },
+
+  onShiftEnd: function() {
+    var title = (this.imgsArray[this.unit].getTitle()) ? this.imgsArray[this.unit].getTitle() : "";
+    var caption = (this.imgsArray[this.unit].getCaption()) ? this.imgsArray[this.unit].getCaption() : "";
+    this.setTitle(title);
+    this.setCaption(caption);
+  },
+  
+  /* ------------- DON'T EDIT PAST HERE ------------- */
+  
+  initialize: function(gallery) {
+    this.gallery = gallery;
+    this.posX = 0;
+    this.dir = "next";
+    this.moving = false;
+    this.frame = 0;
+    this.frameTotal = com.buzamoto.ImageShiftGallery.Gallery.MOVE_COORDS.length;
+    this.MOVE_COORDS = new Array(this.frameTotal);
+    this.timerID = null;
+    this.imgsArray = this.gallery.imageArray;
+    this.unit = 0;
+    this.unitTotal = this.imgsArray.length;
+    
+    // initially set title/captions.
+    var title = (this.imgsArray[this.unit].getTitle()) ? this.imgsArray[this.unit].getTitle() : "";
+    var caption = (this.imgsArray[this.unit].getCaption()) ? this.imgsArray[this.unit].getCaption() : "";
+    this.setTitle(title);
+    this.setCaption(caption);
+  },
+  
+  setCaption: function(caption) {
+    if ($(this.gallery.wrapper.id+"_caption")) $(this.gallery.wrapper.id+"_caption").update(caption);
+  },
+  
+  setTitle: function(title) {
+    if ($(this.gallery.wrapper.id+"_title")) $(this.gallery.wrapper.id+"_title").update(title);
+  },
+
+  calcX: function(dir, currX) {
+    var scale = this.imgsArray[this.unit].getWidth() / 100;
+    switch (dir) {
+      case "next":
+        for (var i = 0; i < this.frameTotal; i++) {
+          this.MOVE_COORDS[i] = currX + com.buzamoto.ImageShiftGallery.Gallery.MOVE_COORDS[i] * scale;
+        }
+        break;
+      
+      case "prev":
+        var scale = this.imgsArray[this.unit-1].getWidth() / 100;
+        for (var i = 0; i < this.frameTotal; i++) {
+          this.MOVE_COORDS[i] = currX - com.buzamoto.ImageShiftGallery.Gallery.MOVE_COORDS[i] * scale;
+        }
+        break;
+
+      case "start":
+        for (var i = 0; i < this.frameTotal; i++) {
+          this.MOVE_COORDS[i] = currX - com.buzamoto.ImageShiftGallery.Gallery.MOVE_COORDS[i] / 100 * (this.gallery.totalWidth - this.imgsArray[this.imgsArray.length-1].getWidth());
+        }
+        break;
+      
+      case "end":
+        for (var i = 0; i < this.frameTotal; i++) {
+          this.MOVE_COORDS[i] = currX + com.buzamoto.ImageShiftGallery.Gallery.MOVE_COORDS[i] / 100 * (this.gallery.totalWidth-this.imgsArray[this.imgsArray.length-1].getWidth());
+        }
+    }
+  },
+
+  moveTo: function(x) {
+    $(this.gallery.container.id).style.left = x + "px";
+  },
+
+  move: function(dir) {
+    this.setDir(dir);
+    this.run();
+  },
+
+  setDir: function(dir) {
+    this.dir = dir;
+  },
+
+  run: function() {
+    if (this.timerID) {
+      window.clearTimeout(this.timerID);
+      this.timerID = null;
+    }
+    if (!this.moving) {
+      // run on start callback
+      this.onShiftStart();
+      if (this.dir == "next") {
+        if (this.unit < this.unitTotal-1) {
+          this.calcX("next", this.posX);
+          this.unit++;
+        }
+        else if (this.unit == this.unitTotal-1) {
+          this.calcX("start", this.posX);
+          this.unit = 0;
+        }
+        else return;
+      }
+      else if (this.dir == "prev") {
+        if (this.unit > 0) {
+          this.calcX("prev", this.posX);
+          this.unit--;
+        }
+        else if (this.unit == 0) {
+          this.calcX("end", this.posX);
+          this.unit = this.unitTotal-1;
+        }
+        else return;
+      }
+      else return;
+      this.moving = true;
+    }
+    if (this.frame < this.frameTotal) {
+      this.posX = this.MOVE_COORDS[this.frame];
+      this.frame++;
+      this.moveTo(this.posX);
+      var self = this;
+      this.timerID = window.setTimeout(function() {
+        self.run();
+      }, 20);
+    }
+    else {
+      this.moving = false;
+      this.frame = 0;
+      window.clearTimeout(this.timerID);
+      this.timerID = null;
+      // run on end callback
+      this.onShiftEnd();
+    }
+  }
+});
