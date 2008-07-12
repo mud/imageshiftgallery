@@ -1,6 +1,6 @@
 /*******************************************************************************
 
-ImageShiftGallery, version 1.1.1 (07/07/2008)
+ImageShiftGallery, version 1.2 (07/12/2008)
 (c) 2005 - 2008 Takashi Okamoto.
 
 ImageShiftGallery is a JavaScript image viewer. It is freely distributable,
@@ -11,6 +11,9 @@ appreciated. For details, see the BuzaMoto website: http://buzamoto.com/
 
 /* ----------------------------------------------------------------------------
 
+1.2   - added onclick behavior for images.
+        changed from templates to procedurally creating gallery elements.
+        fixed to support IE6.
 1.1.1 - fixed for IE7.
         Safari image loading fix (able to apply width/height) to images.
         added support to add padding on the right of the image.
@@ -39,7 +42,7 @@ if (com.buzamoto.ImageShiftGallery)
 // ---------------------- com.buzamoto.ImageShiftGallery
 
 com.buzamoto.ImageShiftGallery = {
-  Version: '1.1.1'
+  Version: '1.2'
 }
 
 
@@ -61,14 +64,14 @@ com.buzamoto.ImageShiftGallery.Gallery = Class.create({
         obj = new com.buzamoto.ImageShiftGallery.Markup(this, imageArray[i]);
       this.imageArray.push(obj);
     }
-    var imageList = com.buzamoto.ImageShiftGallery.Gallery.createImageList(this.alignment, imageArray);
+    var imageNodes = com.buzamoto.ImageShiftGallery.Gallery.createImageNodes(this.alignment, imageArray);
     
     // create dom elements to inject
     this.container = document.createElement('div');
     Element.extend(this.container);
     this.container.id = this.id + '-container';
     this.container.addClassName('isg_container');
-    this.container.update(imageList);
+    this.container.insert({top: imageNodes});
     this.wrapper.insert({top: this.container});
     this.totalWidth = this.container.childElements()[0].getWidth();
     
@@ -133,24 +136,61 @@ com.buzamoto.ImageShiftGallery.Gallery = Class.create({
 Object.extend(com.buzamoto.ImageShiftGallery.Gallery, {
   //MOVE_COORDS: new Array(0, -1, -4, -7, -11, -17, -23, -30, -38, -47, -56, -66, -75, -84, -92, -99, -100),
   MOVE_COORDS: new Array(0, -1, -4, -7, -11, -17, -23, -30, -38, -47, -56, -66, -75, -84, -92, -96, -100, -103, -105, -102, -101, -100),
-  TEMPLATE: {
-    table: new Template('<table cellpadding="0" cellspacing="0" border="0" class="isg_table"><tr valign="#{align}">#{images}</tr></table>'),
-    image: new Template('<td style="padding-right: #{padding}px;"><img src="#{src}" alt="" width="#{width}" height="#{height}" /></td>'),
-    image_size: new Template('<td style="padding-right: #{padding}px;"><img src="#{src}" alt="" width="#{width}" height="#{height}" /></td>'),
-    markup: new Template('<td style="padding-right: #{padding}px;"><div class="isg_markup-wrapper" style="width: #{width}px; height: #{height}px;">#{markup}</div></td>')
-  },
   
-  createImageList: function(align, imageArray) {
-    var images = "";
+  createImageNodes: function(align, imageArray) {
+    // create table
+    var imageTable = document.createElement('table');
+    Element.extend(imageTable);
+    imageTable.setAttribute('cellPadding', 0);
+    imageTable.setAttribute('cellSpacing', 0);
+    imageTable.setAttribute('border', 0);
+    imageTable.addClassName('isg_table');
+    
+    // create tr
+    var tr = document.createElement('tr');
+    Element.extend(tr);
+    
     imageArray.each(function(image) {
-      if (image.src && image.width && image.height)
-        images += com.buzamoto.ImageShiftGallery.Gallery.TEMPLATE.image_size.evaluate(image);
-      else if (image.src)
-        images += com.buzamoto.ImageShiftGallery.Gallery.TEMPLATE.image.evaluate(image);
-      else if (image.markup)
-        images += com.buzamoto.ImageShiftGallery.Gallery.TEMPLATE.markup.evaluate(image);
+      var td = document.createElement('td');
+      Element.extend(td);
+      td.setStyle({verticalAlign: align});
+      
+      if (image.padding)
+        td.setStyle({paddingRight: image.padding + 'px'});
+      var node, handler;
+      if (image.src) {
+        node = document.createElement('img');
+        Element.extend(node);
+        node.setAttribute('src', image.src);
+        if (image.width)
+          node.setStyle({width: image.width + 'px'});
+        if (image.height)
+          node.setStyle({height: image.height + 'px'});
+        if (image.click) {
+          handler = document.createElement('a');
+          Element.extend(handler);
+          handler.setAttribute('href', 'javascript:void(0)');
+          handler.observe('click', image.click);
+          handler.insert({bottom: node});
+          node = handler;
+        }
+      } else if (image.markup) {
+        node = document.createElement('div');
+        Element.extend(node);
+        node.addClassName('isg_markup-wrapper');
+        node.setStyle({width: image.width + 'px', height: image.height + 'px'});
+        node.update(image.markup);
+      }
+      td.insert({bottom: node});
+      tr.insert({bottom: td});
     });
-    return com.buzamoto.ImageShiftGallery.Gallery.TEMPLATE.table.evaluate({align: align, images: images});
+    if (navigator.userAgent.match(/MSIE/)) {
+      var tbody = document.createElement('tbody');
+      tbody.appendChild(tr);
+      tr = tbody;
+    }
+    imageTable.insert({bottom: tr});
+    return imageTable;
   }
 });
 

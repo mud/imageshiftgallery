@@ -37,6 +37,11 @@ h2 {
   font-size: 9px;
 }
 
+table td {
+  margin: 0;
+  padding: 0;
+}
+
 a { color: #111; }
 a:hover { text-decoration: none; }
 
@@ -116,6 +121,20 @@ table.isg_table {
   margin: 0;
   padding: 0;
   line-height: 0;
+  border-spacing: 0;
+  border: none;
+}
+
+table.isg_table img { border: none; }
+
+table.isg_table tr {
+  margin: 0;
+  padding: 0;
+}
+
+table.isg_table td {
+  margin: 0;
+  padding: 0;
 }
 
 .isg_markup-wrapper {
