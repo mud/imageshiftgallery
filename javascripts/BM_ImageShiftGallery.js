@@ -1,6 +1,6 @@
 /*******************************************************************************
 
-ImageShiftGallery, version 1.2 (07/12/2008)
+ImageShiftGallery, version 1.2.1 (07/22/2008)
 (c) 2005 - 2008 Takashi Okamoto.
 
 ImageShiftGallery is a JavaScript image viewer. It is freely distributable,
@@ -11,6 +11,7 @@ appreciated. For details, see the BuzaMoto website: http://buzamoto.com/
 
 /* ----------------------------------------------------------------------------
 
+1.2.1 - added onmouseover and onmouseout behaviors.
 1.2   - added onclick behavior for images.
         changed from templates to procedurally creating gallery elements.
         fixed to support IE6.
@@ -42,7 +43,7 @@ if (com.buzamoto.ImageShiftGallery)
 // ---------------------- com.buzamoto.ImageShiftGallery
 
 com.buzamoto.ImageShiftGallery = {
-  Version: '1.2'
+  Version: '1.2.1'
 }
 
 
@@ -166,11 +167,16 @@ Object.extend(com.buzamoto.ImageShiftGallery.Gallery, {
           node.setStyle({width: image.width + 'px'});
         if (image.height)
           node.setStyle({height: image.height + 'px'});
-        if (image.click) {
+        if (image.click || image.mouseover || image.mouseout) {
           handler = document.createElement('a');
           Element.extend(handler);
           handler.setAttribute('href', 'javascript:void(0)');
-          handler.observe('click', image.click);
+          handler.setStyle({display: 'block', lineHeight: 0});
+          
+          ['click', 'mouseover', 'mouseout'].each(function(evt) {
+            if (image[evt]) handler.observe(evt, image[evt]);
+          });
+          
           handler.insert({bottom: node});
           node = handler;
         }
