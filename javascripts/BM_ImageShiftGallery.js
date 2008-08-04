@@ -1,6 +1,6 @@
 /*******************************************************************************
 
-ImageShiftGallery, version 1.2.1 (07/22/2008)
+ImageShiftGallery, version 1.2.2 (08/04/2008)
 (c) 2005 - 2008 Takashi Okamoto.
 
 ImageShiftGallery is a JavaScript image viewer. It is freely distributable,
@@ -11,6 +11,7 @@ appreciated. For details, see the BuzaMoto website: http://buzamoto.com/
 
 /* ----------------------------------------------------------------------------
 
+1.2.2 - improved image dimension calculation.
 1.2.1 - added onmouseover and onmouseout behaviors.
 1.2   - added onclick behavior for images.
         changed from templates to procedurally creating gallery elements.
@@ -43,7 +44,7 @@ if (com.buzamoto.ImageShiftGallery)
 // ---------------------- com.buzamoto.ImageShiftGallery
 
 com.buzamoto.ImageShiftGallery = {
-  Version: '1.2.1'
+  Version: '1.2.2'
 }
 
 
@@ -124,11 +125,11 @@ com.buzamoto.ImageShiftGallery.Gallery = Class.create({
   
   loadedImages: function() {
     for (var i = 0, len = this.imageArray.length; i < len; ++i) {
-      if (this.imageArray[i].src && this.imageArray[i].image.complete == false) {
-        return false;
+      if (this.imageArray[i].image) {
+        if (this.imageArray[i].image.src && this.imageArray[i].image.complete == false) return false;
+        if (this.imageArray[i].width == 0) this.imageArray[i].width = this.imageArray[i].image.width;
+        if (this.imageArray[i].height == 0) this.imageArray[i].height = this.imageArray[i].image.height;
       }
-      if (this.imageArray[i].width == 0) this.imageArray[i].width = this.imageArray[i].image.width;
-      if (this.imageArray[i].height == 0) this.imageArray[i].height = this.imageArray[i].image.height;
     }
     return true;
   }
