@@ -33,7 +33,7 @@
         padding:  20,
         title:    "Image 1",
         caption:  "This is the second image.",
-        click:    function(e) {alert('Hi, you clicked on an action')}
+        click:    function(e) {alert('Hi, you clicked on an action' + this.caption)}
       },
       {
         markup:   '<div style="width: 200px; height: 400px; background-color: red;">\
@@ -43,7 +43,8 @@
         height:   400,
         padding:  20,
         title:    "HTML 2",
-        caption:  "This is the second HTML content."
+        caption:  "This is the second HTML content.",
+        click: function(e) {alert(this.title)}
       },
       {
         src:      "images/400x300.png",

@@ -11,14 +11,15 @@ appreciated. For details, see the BuzaMoto website: http://buzamoto.com/
 
 /* ----------------------------------------------------------------------------
 
-1.2.2 - improved image dimension calculation.
-1.2.1 - added onmouseover and onmouseout behaviors.
-1.2   - added onclick behavior for images.
-        changed from templates to procedurally creating gallery elements.
-        fixed to support IE6.
-1.1.1 - fixed for IE7.
-        Safari image loading fix (able to apply width/height) to images.
-        added support to add padding on the right of the image.
+1.2.3 - enabled 'this' object for event handlers
+1.2.2 - improved image dimension calculation
+1.2.1 - added onmouseover and onmouseout behaviors
+1.2   - added onclick behavior for images
+        changed from templates to procedurally creating gallery elements
+        fixed to support IE6
+1.1.1 - fixed for IE7
+        Safari image loading fix (able to apply width/height) to images
+        added support to add padding on the right of the image
 1.1   - enabled HTML content
 1.0.2 - initial support for IE7
 1.0.1 - fixed image loader for firefox
@@ -44,7 +45,7 @@ if (com.buzamoto.ImageShiftGallery)
 // ---------------------- com.buzamoto.ImageShiftGallery
 
 com.buzamoto.ImageShiftGallery = {
-  Version: '1.2.2'
+  Version: '1.2.3'
 }
 
 
@@ -175,7 +176,10 @@ Object.extend(com.buzamoto.ImageShiftGallery.Gallery, {
           handler.setStyle({display: 'block', lineHeight: 0});
           
           ['click', 'mouseover', 'mouseout'].each(function(evt) {
-            if (image[evt]) handler.observe(evt, image[evt]);
+            if (image[evt]) {
+              //using bindAsEventListener allows us to pass image as 'this'
+              handler.observe(evt, image[evt].bindAsEventListener(image));
+            }
           });
           
           handler.insert({bottom: node});
