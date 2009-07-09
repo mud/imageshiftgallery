@@ -1,7 +1,7 @@
 /*******************************************************************************
 
-ImageShiftGallery, version 1.2.2 (08/04/2008)
-(c) 2005 - 2008 Takashi Okamoto.
+ImageShiftGallery, version 1.3 (07/08/2009)
+(c) 2005 - 2009 Takashi Okamoto.
 
 ImageShiftGallery is a JavaScript image viewer. It is freely distributable,
 but this header must be included, and should not be modified. Donations are 
@@ -11,6 +11,8 @@ appreciated. For details, see the BuzaMoto website: http://buzamoto.com/
 
 /* ----------------------------------------------------------------------------
 
+1.3   - added ongalleryload callback.
+        added autoscroll
 1.2.3 - enabled 'this' object for event handlers
 1.2.2 - improved image dimension calculation
 1.2.1 - added onmouseover and onmouseout behaviors
@@ -45,7 +47,7 @@ if (com.buzamoto.ImageShiftGallery)
 // ---------------------- com.buzamoto.ImageShiftGallery
 
 com.buzamoto.ImageShiftGallery = {
-  Version: '1.2.3'
+  Version: '1.3'
 }
 
 
@@ -53,10 +55,14 @@ com.buzamoto.ImageShiftGallery = {
 
 com.buzamoto.ImageShiftGallery.Gallery = Class.create({
   
-  initialize: function(id, imageArray, align) {
+  initialize: function(id, imageArray, align, autoscroll, autoscrollDelay) {
     this.wrapper = $(id);
     this.id = id;
     this.alignment = (align) ? align : 'top';
+    this.autoscroll = (autoscroll == true);
+    this.autoscrollTimer = null;
+    this.autoscrollDelay = autoscrollDelay;
+    
     // convert imageArray to array of ISGImages
     this.imageArray = new Array();
     for (var i = 0, len = imageArray.length; i < len; ++i) {
@@ -75,7 +81,6 @@ com.buzamoto.ImageShiftGallery.Gallery = Class.create({
     this.container.id = this.id + '-container';
     this.container.addClassName('isg_container');
     this.container.insert({top: imageNodes});
-    this.wrapper.insert({top: this.container});
     this.totalWidth = this.container.childElements()[0].getWidth();
     
     // create controller
@@ -87,6 +92,7 @@ com.buzamoto.ImageShiftGallery.Gallery = Class.create({
     ['next', 'prev'].each(function(type) {
       if (control = $(self.id + "_" + type)) {
         Event.observe(control, 'click', function(e) {
+          if (self.autoscroll) self.stopAutoScroll();
           self.controller.move(type);
           Event.stop(e);
         });
@@ -98,6 +104,31 @@ com.buzamoto.ImageShiftGallery.Gallery = Class.create({
     window.setTimeout(function() {
       self.loadNotifier();
     }, 200);
+  },
+  
+  onGalleryLoad: function() {
+    this.wrapper.insert({top: this.container});
+    this.setWidth();
+    if (this.autoscroll) {
+      this.scheduleAutoScroll();
+    }
+  },
+  
+  scheduleAutoScroll: function() {
+    var self = this;
+    this.autoscroll = true;
+    this.autoscrollTimer = window.setTimeout(function() {
+      self.controller.move('next');
+      self.scheduleAutoScroll();
+    }, this.autoscrollDelay);
+  },
+  
+  stopAutoScroll: function() {
+    if (this.autoscrollTimer) {
+      window.clearTimeout(this.autoscrollTimer);
+      this.autoscrollTimer = null;
+      this.autoscroll = false;
+    }
   },
   
   calcWidth: function() {
@@ -120,7 +151,7 @@ com.buzamoto.ImageShiftGallery.Gallery = Class.create({
         self.loadNotifier(delay);
       }, delay);
     } else {
-      this.setWidth();
+      this.onGalleryLoad();
     }
   },
   
