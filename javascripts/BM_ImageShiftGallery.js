@@ -1,7 +1,7 @@
 /*******************************************************************************
 
-ImageShiftGallery, version 1.3 (07/08/2009)
-(c) 2005 - 2009 Takashi Okamoto.
+ImageShiftGallery, version 1.3.1 (08/21/2010)
+(c) 2005 - 2010 Takashi Okamoto.
 
 ImageShiftGallery is a JavaScript image viewer. It is freely distributable,
 but this header must be included, and should not be modified. Donations are 
@@ -11,6 +11,8 @@ appreciated. For details, see the BuzaMoto website: http://buzamoto.com/
 
 /* ----------------------------------------------------------------------------
 
+1.3.1 - added transform3d support for supported browers, allows hardware
+        acceleration for many browsers.
 1.3   - added ongalleryload callback.
         added autoscroll
 1.2.3 - enabled 'this' object for event handlers
@@ -352,6 +354,18 @@ com.buzamoto.ImageShiftGallery.Controller = Class.create({
     this.unit = 0;
     this.unitTotal = this.imgsArray.length;
     
+    this.support3d = false;
+    ['perspectiveProperty',
+     'WebkitPerspective',
+     'MozPerspective',
+     'OPerspective',
+     'msPerspective'].each(function(prop) {
+       if (typeof this.gallery.container.getStyle(prop) != 'undefined') {
+         this.support3d = true;
+         $break;
+       }
+     }, this);
+    
     // initially set title/captions.
     var title = (this.imgsArray[this.unit].getTitle()) ? this.imgsArray[this.unit].getTitle() : "";
     var caption = (this.imgsArray[this.unit].getCaption()) ? this.imgsArray[this.unit].getCaption() : "";
@@ -397,7 +411,14 @@ com.buzamoto.ImageShiftGallery.Controller = Class.create({
   },
 
   moveTo: function(x) {
-    $(this.gallery.container.id).style.left = x + "px";
+    if (this.support3d) {
+      var transform = 'translate3d(' + x + 'px, ' + '0, 0)';
+      $(this.gallery.container.id).setStyle({
+        webkitTransform: transform
+      });
+    } else {
+      $(this.gallery.container.id).style.left = x + "px";
+    }
   },
 
   move: function(dir) {
